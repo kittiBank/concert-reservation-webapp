@@ -13,7 +13,7 @@ export function Header() {
   const router = useRouter();
   const { user, isAuthenticated, isAdmin, logout } = useAuth();
 
-  if (authPaths.includes(pathname)) {
+  if (authPaths.includes(pathname) || pathname.startsWith("/admin")) {
     return null;
   }
 
@@ -23,21 +23,11 @@ export function Header() {
   };
 
   const navLinks = [
-    { href: "/concerts", label: "Concerts", show: isAuthenticated },
+    { href: "/concerts", label: "Concerts", show: isAuthenticated && !isAdmin },
     {
       href: "/my-reservations",
       label: "My Reservations",
       show: isAuthenticated && !isAdmin,
-    },
-    {
-      href: "/admin/concerts",
-      label: "Manage Concerts",
-      show: isAuthenticated && isAdmin,
-    },
-    {
-      href: "/admin/audit",
-      label: "Audit Trail",
-      show: isAuthenticated && isAdmin,
     },
   ];
 

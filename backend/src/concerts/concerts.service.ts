@@ -15,6 +15,7 @@ import {
 } from './concerts.repository';
 import { ConcertsListCacheService } from './concerts-list-cache.service';
 import { ConcertResponseDto } from './dto/concert-response.dto';
+import { ConcertStatsDto } from './dto/concert-stats.dto';
 import { CreateConcertDto } from './dto/create-concert.dto';
 import { ListConcertsQueryDto } from './dto/list-concerts-query.dto';
 
@@ -62,6 +63,11 @@ export class ConcertsService {
     }
 
     return buildItemResponse(this.toResponse(concert));
+  }
+
+  async getStats(): Promise<ApiItemResponseDto<ConcertStatsDto>> {
+    const stats = await this.concertsRepository.getStats();
+    return buildItemResponse(stats);
   }
 
   async create(

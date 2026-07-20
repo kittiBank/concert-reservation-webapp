@@ -5,6 +5,7 @@ import type {
   ApiSuccessResponse,
   Concert,
   CreateConcertInput,
+  ConcertStats,
 } from "@/types";
 
 export interface ListConcertsParams {
@@ -26,6 +27,13 @@ export async function listConcerts(
 
 export async function getConcert(id: number): Promise<Concert> {
   const response = await apiRequest<ApiItemResponse<Concert>>(`/concerts/${id}`);
+  return response.data;
+}
+
+export async function getConcertStats(): Promise<ConcertStats> {
+  const response = await apiRequest<ApiItemResponse<ConcertStats>>(
+    "/concerts/stats",
+  );
   return response.data;
 }
 

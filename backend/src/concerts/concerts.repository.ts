@@ -66,4 +66,19 @@ export class ConcertsRepository {
       select: { id: true },
     });
   }
+
+  getStats(): Promise<{
+    totalSeats: number;
+    reserved: number;
+    cancelled: number;
+  }> {
+    return Promise.all([
+      this.prisma.client.concert.aggregate({ _sum: { totalSeats: true } }),
+      this.prisma.client.reservation.count(),
+    ]).then(([seats, reserved]) => ({
+      totalSeats: seats._sum.totalSeats ?? 0,
+      reserved,
+      cancelled: 0,
+    }));
+  }
 }

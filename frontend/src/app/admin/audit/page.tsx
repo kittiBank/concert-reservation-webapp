@@ -2,14 +2,12 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { AuthGuard } from "@/components/auth/AuthGuard";
-import { PageContainer } from "@/components/layout/PageContainer";
 import { EmptyState, Spinner } from "@/components/ui/Spinner";
 import { ApiError } from "@/lib/api/client";
 import { listAllReservations } from "@/lib/api/reservations";
 import type { Reservation } from "@/types";
 
-function AdminAuditContent() {
+export default function AdminAuditPage() {
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -35,10 +33,13 @@ function AdminAuditContent() {
   }, [fetchAudit]);
 
   return (
-    <PageContainer
-      title="Reservation Audit Trail"
-      description="All user reservations across the system"
-    >
+    <div className="p-6 sm:p-8">
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-[#111827]">History</h1>
+        <p className="mt-1 text-sm text-[#6B7280]">
+          All user reservations across the system
+        </p>
+      </div>
       {loading ? (
         <Spinner />
       ) : reservations.length === 0 ? (
@@ -111,14 +112,6 @@ function AdminAuditContent() {
           )}
         </>
       )}
-    </PageContainer>
-  );
-}
-
-export default function AdminAuditPage() {
-  return (
-    <AuthGuard requireAdmin>
-      <AdminAuditContent />
-    </AuthGuard>
+    </div>
   );
 }

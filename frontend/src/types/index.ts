@@ -65,6 +65,12 @@ export interface ApiErrorResponse {
   error?: string;
 }
 
+export interface ConcertStats {
+  totalSeats: number;
+  reserved: number;
+  cancelled: number;
+}
+
 export interface CreateConcertInput {
   name: string;
   description: string;
