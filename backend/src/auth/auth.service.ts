@@ -38,6 +38,7 @@ export class AuthService {
     const passwordHash = await bcrypt.hash(dto.password, 10);
     const user = await this.usersRepository.create({
       email: dto.email.toLowerCase(),
+      fullName: dto.fullName.trim(),
       passwordHash,
       role: Role.USER,
     });
@@ -72,6 +73,7 @@ export class AuthService {
   private buildAuthResponse(user: {
     id: number;
     email: string;
+    fullName: string;
     role: Role;
   }): AuthResponseDto {
     const payload: JwtPayload = {
@@ -84,6 +86,7 @@ export class AuthService {
     const authUser: AuthUserResponseDto = {
       id: user.id,
       email: user.email,
+      fullName: user.fullName,
       role: user.role,
     };
 

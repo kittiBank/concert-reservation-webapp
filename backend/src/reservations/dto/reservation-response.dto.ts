@@ -11,6 +11,7 @@ export class ReservationConcertDto {
 export class ReservationUserDto {
   id!: number;
   email!: string;
+  fullName!: string;
 }
 
 export class ReservationResponseDto {

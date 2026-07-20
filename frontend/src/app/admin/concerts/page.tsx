@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { AdminCreateConcertForm } from "@/components/admin/AdminCreateConcertForm";
 import { AdminConcertOverviewList } from "@/components/admin/AdminConcertOverviewList";
@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/Button";
 import { CheckCircleIcon } from "@/components/ui/CheckCircleIcon";
 import { EmptyState, Spinner } from "@/components/ui/Spinner";
 import { cn } from "@/lib/utils";
+import { dedupeRequest } from "@/lib/api/dedupe";
 import { ApiError } from "@/lib/api/client";
 import {
   deleteConcert,
@@ -19,6 +20,15 @@ import {
 import type { Concert, ConcertStats } from "@/types";
 
 type AdminTab = "overview" | "create";
+
+async function loadConcertsData() {
+  const [statsData, concertsData] = await Promise.all([
+    getConcertStats(),
+    listConcerts({ pageSize: 50 }),
+  ]);
+
+  return { statsData, concertsData };
+}
 
 export default function AdminConcertsPage() {
   const [tab, setTab] = useState<AdminTab>("create");
@@ -31,13 +41,10 @@ export default function AdminConcertsPage() {
     name: string;
   } | null>(null);
 
-  const fetchData = useCallback(async () => {
+  const refreshData = async () => {
     setLoading(true);
     try {
-      const [statsData, concertsData] = await Promise.all([
-        getConcertStats(),
-        listConcerts({ pageSize: 50 }),
-      ]);
+      const { statsData, concertsData } = await loadConcertsData();
       setStats(statsData);
       setConcerts(concertsData.data);
     } catch (err) {
@@ -47,11 +54,43 @@ export default function AdminConcertsPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  };
 
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    let cancelled = false;
+
+    async function fetchInitialData() {
+      setLoading(true);
+
+      try {
+        const { statsData, concertsData } = await dedupeRequest(
+          "admin-concerts-home",
+          loadConcertsData,
+        );
+
+        if (cancelled) return;
+
+        setStats(statsData);
+        setConcerts(concertsData.data);
+      } catch (err) {
+        if (cancelled) return;
+
+        const message =
+          err instanceof ApiError ? err.message : "Failed to load data";
+        toast.error(message);
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    }
+
+    void fetchInitialData();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const handleDeleteRequest = (id: number, name: string) => {
     setDeleteTarget({ id, name });
@@ -67,7 +106,7 @@ export default function AdminConcertsPage() {
         icon: <CheckCircleIcon />,
       });
       setDeleteTarget(null);
-      fetchData();
+      refreshData();
     } catch (err) {
       const message =
         err instanceof ApiError ? err.message : "Failed to delete concert";
@@ -115,7 +154,7 @@ export default function AdminConcertsPage() {
 
           <div className="mt-3 sm:mt-4 md:mt-5 md:min-h-0 md:flex-1 md:overflow-hidden">
             {tab === "create" ? (
-              <AdminCreateConcertForm onSuccess={fetchData} />
+              <AdminCreateConcertForm onSuccess={refreshData} />
             ) : loading ? (
               <Spinner />
             ) : concerts.length === 0 ? (

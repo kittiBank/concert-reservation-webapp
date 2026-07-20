@@ -8,4 +8,9 @@ export const VALIDATE_MESSAGE = {
     string: 'password must be a string',
     minLength: 'password must be at least 8 characters',
   },
+  fullName: {
+    required: 'full name is required',
+    string: 'full name must be a string',
+    tooLong: 'full name is too long',
+  },
 } as const;

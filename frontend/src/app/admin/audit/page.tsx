@@ -1,9 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { AdminHistoryTable } from "@/components/admin/AdminHistoryTable";
 import { EmptyState, Spinner } from "@/components/ui/Spinner";
+import { dedupeRequest } from "@/lib/api/dedupe";
 import { ApiError } from "@/lib/api/client";
 import { listAllReservations } from "@/lib/api/reservations";
 import type { Reservation } from "@/types";
@@ -14,24 +15,41 @@ export default function AdminAuditPage() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  const fetchAudit = useCallback(async () => {
-    setLoading(true);
-    try {
-      const response = await listAllReservations({ page, pageSize: 20 });
-      setReservations(response.data);
-      setTotalPages(response.meta.totalPages);
-    } catch (err) {
-      const message =
-        err instanceof ApiError ? err.message : "Failed to load audit trail";
-      toast.error(message);
-    } finally {
-      setLoading(false);
-    }
-  }, [page]);
-
   useEffect(() => {
-    fetchAudit();
-  }, [fetchAudit]);
+    let cancelled = false;
+
+    async function fetchAudit() {
+      setLoading(true);
+
+      try {
+        const response = await dedupeRequest(
+          `admin-audit:${page}`,
+          () => listAllReservations({ page, pageSize: 20 }),
+        );
+
+        if (cancelled) return;
+
+        setReservations(response.data);
+        setTotalPages(response.meta.totalPages);
+      } catch (err) {
+        if (cancelled) return;
+
+        const message =
+          err instanceof ApiError ? err.message : "Failed to load audit trail";
+        toast.error(message);
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    }
+
+    void fetchAudit();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [page]);
 
   return (
     <div className="p-3 sm:p-4 md:p-6">

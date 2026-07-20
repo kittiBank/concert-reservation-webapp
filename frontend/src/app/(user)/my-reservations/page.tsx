@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
-import { AuthGuard } from "@/components/auth/AuthGuard";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -124,9 +123,5 @@ function MyReservationsContent() {
 }
 
 export default function MyReservationsPage() {
-  return (
-    <AuthGuard>
-      <MyReservationsContent />
-    </AuthGuard>
-  );
+  return <MyReservationsContent />;
 }

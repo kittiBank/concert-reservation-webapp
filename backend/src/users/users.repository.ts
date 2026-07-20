@@ -5,6 +5,7 @@ import { PrismaService } from '../database/prisma.service';
 export type UserRecord = {
   id: number;
   email: string;
+  fullName: string;
   passwordHash: string;
   role: Role;
   createdAt: Date;
@@ -20,6 +21,7 @@ export class UsersRepository {
       select: {
         id: true,
         email: true,
+        fullName: true,
         passwordHash: true,
         role: true,
         createdAt: true,
@@ -33,6 +35,7 @@ export class UsersRepository {
       select: {
         id: true,
         email: true,
+        fullName: true,
         passwordHash: true,
         role: true,
         createdAt: true,
@@ -42,18 +45,21 @@ export class UsersRepository {
 
   create(data: {
     email: string;
+    fullName: string;
     passwordHash: string;
     role?: Role;
   }): Promise<UserRecord> {
     return this.prisma.client.user.create({
       data: {
         email: data.email,
+        fullName: data.fullName,
         passwordHash: data.passwordHash,
         role: data.role ?? Role.USER,
       },
       select: {
         id: true,
         email: true,
+        fullName: true,
         passwordHash: true,
         role: true,
         createdAt: true,

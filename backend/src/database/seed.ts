@@ -10,10 +10,12 @@ export const SEED_PASSWORD = 'password';
 export const SEED_USERS = [
   {
     email: 'admin@example.com',
+    fullName: 'Admin User',
     role: 'ADMIN',
   },
   {
     email: 'user@example.com',
+    fullName: 'Sara John',
     role: 'USER',
   },
 ] as const;
@@ -50,11 +52,13 @@ async function main(): Promise<void> {
     await prisma.user.upsert({
       where: { email: user.email },
       update: {
+        fullName: user.fullName,
         passwordHash,
         role: user.role,
       },
       create: {
         email: user.email,
+        fullName: user.fullName,
         passwordHash,
         role: user.role,
       },

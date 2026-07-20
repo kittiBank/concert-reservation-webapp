@@ -35,7 +35,7 @@ export function AdminHistoryTable({ reservations }: AdminHistoryTableProps) {
                 {formatAuditDateTime(reservation.createdAt)}
               </td>
               <td className="h-[44px] border border-[#E5E7EB] px-4 text-left text-[16px] text-[#111827]">
-                {reservation.user?.email ?? `User #${reservation.userId}`}
+                {reservation.user?.fullName?.trim() || "—"}
               </td>
               <td className="h-[44px] border border-[#E5E7EB] px-4 text-left text-[16px] text-[#111827]">
                 {reservation.concert.name}

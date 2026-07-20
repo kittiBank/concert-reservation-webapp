@@ -43,6 +43,7 @@ describe('ReservationsService', () => {
     user: {
       id: 1,
       email: 'user@example.com',
+      fullName: 'Sara John',
     },
   };
 
@@ -132,6 +133,7 @@ describe('ReservationsService', () => {
       expect(result.data[0].user).toEqual({
         id: 1,
         email: 'user@example.com',
+        fullName: 'Sara John',
       });
     });
   });
