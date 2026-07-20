@@ -16,6 +16,7 @@ import {
   buildSuccessResponse,
 } from '../common/helpers/api-response.helper';
 import { AuthUser } from '../common/types/auth-user.type';
+import { ConcertsListCacheService } from '../concerts/concerts-list-cache.service';
 import { RESERVATION_ERROR_MESSAGE } from './constants/reservation-error.message';
 import { CreateReservationDto } from './dto/create-reservation.dto';
 import { ListReservationsQueryDto } from './dto/list-reservations-query.dto';
@@ -29,6 +30,7 @@ import {
 export class ReservationsService {
   constructor(
     private readonly reservationsRepository: ReservationsRepository,
+    private readonly concertsListCache: ConcertsListCacheService,
   ) {}
 
   async create(
@@ -45,6 +47,7 @@ export class ReservationsService {
     }
 
     const reservation = await this.createReservation(user.id, dto.concertId);
+    this.concertsListCache.invalidate();
     return buildItemResponse(this.toResponse(reservation));
   }
 
@@ -97,6 +100,7 @@ export class ReservationsService {
     }
 
     await this.reservationsRepository.delete(id);
+    this.concertsListCache.invalidate();
     return buildSuccessResponse();
   }
 
