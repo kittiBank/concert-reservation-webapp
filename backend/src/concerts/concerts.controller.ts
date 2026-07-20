@@ -36,6 +36,14 @@ export class ConcertsController {
     return this.concertsService.findAll(query);
   }
 
+  @Get(':id')
+  @Roles(Role.USER, Role.ADMIN)
+  findOne(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<ApiItemResponseDto<ConcertResponseDto>> {
+    return this.concertsService.findOne(id);
+  }
+
   @Post()
   @Roles(Role.ADMIN)
   create(
