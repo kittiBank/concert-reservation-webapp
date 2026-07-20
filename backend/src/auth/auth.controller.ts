@@ -10,6 +10,7 @@ import { RegisterDto } from './dto/register.dto';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  //register a new user
   @Public()
   @Post('register')
   register(
@@ -18,11 +19,10 @@ export class AuthController {
     return this.authService.register(dto);
   }
 
+  //login a user
   @Public()
   @Post('login')
-  login(
-    @Body() dto: LoginDto,
-  ): Promise<ApiItemResponseDto<AuthResponseDto>> {
+  login(@Body() dto: LoginDto): Promise<ApiItemResponseDto<AuthResponseDto>> {
     return this.authService.login(dto);
   }
 }

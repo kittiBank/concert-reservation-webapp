@@ -22,6 +22,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
+  //register a new user
   async register(
     dto: RegisterDto,
   ): Promise<ApiItemResponseDto<AuthResponseDto>> {
@@ -29,6 +30,7 @@ export class AuthService {
       dto.email.toLowerCase(),
     );
 
+    //check if user already exists
     if (existing) {
       throw new ConflictException(AUTH_ERROR_MESSAGE.emailAlreadyExists);
     }
@@ -43,6 +45,7 @@ export class AuthService {
     return buildItemResponse(this.buildAuthResponse(user));
   }
 
+  //login a user
   async login(dto: LoginDto): Promise<ApiItemResponseDto<AuthResponseDto>> {
     const user = await this.usersRepository.findByEmail(
       dto.email.toLowerCase(),
@@ -52,6 +55,7 @@ export class AuthService {
       throw new UnauthorizedException(AUTH_ERROR_MESSAGE.invalidCredentials);
     }
 
+    //encrypt password
     const isPasswordValid = await bcrypt.compare(
       dto.password,
       user.passwordHash,
@@ -64,6 +68,7 @@ export class AuthService {
     return buildItemResponse(this.buildAuthResponse(user));
   }
 
+  //build auth response
   private buildAuthResponse(user: {
     id: number;
     email: string;

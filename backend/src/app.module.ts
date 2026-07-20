@@ -9,6 +9,7 @@ import { ConcertsModule } from './concerts/concerts.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
 import { PrismaModule } from './database/prisma.module';
+import { ReservationsModule } from './reservations/reservations.module';
 
 const isDevelopment = process.env.NODE_ENV === 'development';
 
@@ -18,6 +19,7 @@ const isDevelopment = process.env.NODE_ENV === 'development';
     PrismaModule,
     AuthModule,
     ConcertsModule,
+    ReservationsModule,
     LoggerModule.forRoot({
       pinoHttp: {
         level: process.env.LOG_LEVEL ?? (isDevelopment ? 'debug' : 'info'),
