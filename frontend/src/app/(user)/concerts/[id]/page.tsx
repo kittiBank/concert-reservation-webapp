@@ -4,7 +4,6 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { AuthGuard } from "@/components/auth/AuthGuard";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -195,9 +194,5 @@ function ConcertDetailContent() {
 }
 
 export default function ConcertDetailPage() {
-  return (
-    <AuthGuard>
-      <ConcertDetailContent />
-    </AuthGuard>
-  );
+  return <ConcertDetailContent />;
 }

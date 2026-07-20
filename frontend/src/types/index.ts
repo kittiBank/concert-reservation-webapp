@@ -3,6 +3,7 @@ export type Role = "ADMIN" | "USER";
 export interface User {
   id: number;
   email: string;
+  fullName: string;
   role: Role;
 }
 
@@ -25,6 +26,7 @@ export interface Concert {
 export interface ReservationUser {
   id: number;
   email: string;
+  fullName: string;
 }
 
 export interface Reservation {
@@ -87,6 +89,7 @@ export interface LoginInput {
 }
 
 export interface RegisterInput {
+  fullName: string;
   email: string;
   password: string;
 }

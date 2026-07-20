@@ -168,6 +168,7 @@ export class ReservationsService {
             user: {
               id: reservation.user.id,
               email: reservation.user.email,
+              fullName: reservation.user.fullName,
             },
           }
         : {}),

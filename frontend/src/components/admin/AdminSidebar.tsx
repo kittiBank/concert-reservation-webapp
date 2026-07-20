@@ -6,7 +6,15 @@ import { useAuth } from "@/hooks/useAuth";
 import { PublicIcon } from "@/components/ui/PublicIcon";
 import { cn } from "@/lib/utils";
 
-const navItems = [
+type NavItem = {
+  href: string;
+  label: string;
+  shortLabel?: string;
+  icon: string;
+  match: (path: string) => boolean;
+};
+
+const adminNavItems: NavItem[] = [
   {
     href: "/admin/concerts",
     label: "Home",
@@ -24,6 +32,25 @@ const navItems = [
     href: "/concerts",
     label: "Switch to user",
     shortLabel: "User",
+    icon: "/icon/refresh-ccw.png",
+    match: () => false,
+  },
+];
+
+const userNavItems: NavItem[] = [
+  {
+    href: "/concerts",
+    label: "Home",
+    icon: "/icon/home.png",
+    match: (path: string) =>
+      path === "/concerts" ||
+      path.startsWith("/concerts/") ||
+      path.startsWith("/my-reservations"),
+  },
+  {
+    href: "/login?role=admin",
+    label: "Switch to Admin",
+    shortLabel: "Admin",
     icon: "/icon/refresh-ccw.png",
     match: () => false,
   },
@@ -83,6 +110,9 @@ export function AdminSidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const { logout } = useAuth();
+  const isAdminPortal = pathname.startsWith("/admin");
+  const navItems = isAdminPortal ? adminNavItems : userNavItems;
+  const portalTitle = isAdminPortal ? "Admin" : "User";
 
   const handleLogout = () => {
     logout();
@@ -93,7 +123,7 @@ export function AdminSidebar() {
     <>
       <aside className="hidden h-screen w-56 shrink-0 flex-col border-r border-[#E5E7EB] bg-white md:flex lg:w-60">
         <div className="px-5 py-6">
-          <h1 className="text-xl font-bold text-[#111827]">Admin</h1>
+          <h1 className="text-xl font-bold text-[#111827]">{portalTitle}</h1>
         </div>
 
         <nav className="flex flex-1 flex-col gap-1 px-3">

@@ -19,6 +19,7 @@ const reservationWithRelations = {
       select: {
         id: true,
         email: true,
+        fullName: true,
       },
     },
   },

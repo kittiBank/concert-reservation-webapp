@@ -15,6 +15,7 @@ describe('AuthService', () => {
   const mockUser = {
     id: 1,
     email: 'user@example.com',
+    fullName: 'Sara John',
     passwordHash: 'hashed-password',
     role: Role.USER,
     createdAt: new Date('2026-01-01'),
@@ -46,6 +47,7 @@ describe('AuthService', () => {
       jest.spyOn(bcrypt, 'hash').mockResolvedValue('hashed-password' as never);
 
       const result = await service.register({
+        fullName: 'Sara John',
         email: 'User@Example.com',
         password: 'password123',
       });
@@ -55,6 +57,7 @@ describe('AuthService', () => {
       );
       expect(usersRepository.create).toHaveBeenCalledWith({
         email: 'user@example.com',
+        fullName: 'Sara John',
         passwordHash: 'hashed-password',
         role: Role.USER,
       });
@@ -63,6 +66,7 @@ describe('AuthService', () => {
       expect(result.data.user).toEqual({
         id: 1,
         email: 'user@example.com',
+        fullName: 'Sara John',
         role: Role.USER,
       });
     });

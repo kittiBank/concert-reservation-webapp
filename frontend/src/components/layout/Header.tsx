@@ -13,7 +13,12 @@ export function Header() {
   const router = useRouter();
   const { user, isAuthenticated, isAdmin, logout } = useAuth();
 
-  if (authPaths.includes(pathname) || pathname.startsWith("/admin")) {
+  if (
+    authPaths.includes(pathname) ||
+    pathname.startsWith("/admin") ||
+    pathname.startsWith("/concerts") ||
+    pathname.startsWith("/my-reservations")
+  ) {
     return null;
   }
 
@@ -87,7 +92,7 @@ export function Header() {
                     Login
                   </Button>
                 </Link>
-                <Link href="/register">
+                <Link href="/login?view=register">
                   <Button size="sm">Register</Button>
                 </Link>
               </>

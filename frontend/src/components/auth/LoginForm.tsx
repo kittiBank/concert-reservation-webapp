@@ -1,12 +1,13 @@
 "use client";
 
-import { Suspense, useState } from "react";
-import Link from "next/link";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { ApiError } from "@/lib/api/client";
 import { cn } from "@/lib/utils";
+
+type AuthView = "login" | "register";
 
 function MailIcon({ className }: { className?: string }) {
   return (
@@ -22,6 +23,24 @@ function MailIcon({ className }: { className?: string }) {
     >
       <path d="M4 6h16v12H4V6z" />
       <path d="m4 7 8 6 8-6" />
+    </svg>
+  );
+}
+
+function UserIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      aria-hidden
+    >
+      <circle cx="12" cy="8" r="4" />
+      <path d="M5 20c0-3.866 3.134-7 7-7s7 3.134 7 7" />
     </svg>
   );
 }
@@ -88,7 +107,7 @@ interface AuthFieldProps {
   value: string;
   onChange: (value: string) => void;
   placeholder: string;
-  icon: "mail" | "lock";
+  icon: "user" | "mail" | "lock";
   showToggle?: boolean;
   autoComplete?: string;
   required?: boolean;
@@ -113,8 +132,14 @@ function AuthField({
     <div className="flex flex-col gap-2">
       <label className="text-sm font-medium text-[#333333]">{label}</label>
       <div className="relative">
-        <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#9CA3AF]">
-          {icon === "mail" ? <MailIcon /> : <LockIcon />}
+        <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#111827]">
+          {icon === "mail" ? (
+            <MailIcon />
+          ) : icon === "lock" ? (
+            <LockIcon />
+          ) : (
+            <UserIcon />
+          )}
         </span>
         <input
           type={inputType}
@@ -147,16 +172,41 @@ export function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const role = searchParams.get("role") === "admin" ? "admin" : "user";
-  const { login, logout } = useAuth();
+  const viewParam = searchParams.get("view") === "register" ? "register" : "login";
+  const { login, register, logout } = useAuth();
+  const [view, setView] = useState<AuthView>(viewParam);
+  const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    setView(viewParam);
+  }, [viewParam]);
+
+  const switchView = (next: AuthView) => {
+    setView(next);
+    setError("");
+    setFullName("");
+    setEmail("");
+    setPassword("");
+    setConfirmPassword("");
+
+    const params = new URLSearchParams(searchParams.toString());
+    if (next === "register") {
+      params.set("view", "register");
+    } else {
+      params.delete("view");
+    }
+    router.replace(`/login?${params.toString()}`, { scroll: false });
+  };
 
   const loginLabel =
     role === "admin" ? "Login as Administrator" : "Login as User";
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setLoading(true);
@@ -186,13 +236,136 @@ export function LoginForm() {
     }
   };
 
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+
+    const trimmedFullName = fullName.trim();
+    if (!trimmedFullName) {
+      setError("Full name is required");
+      return;
+    }
+
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      await register({
+        fullName: trimmedFullName,
+        email,
+        password,
+      });
+      toast.success("Account created successfully");
+      router.push("/concerts");
+    } catch (err) {
+      const message =
+        err instanceof ApiError ? err.message : "Something went wrong";
+      setError(message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (view === "register") {
+    return (
+      <div className="w-full max-w-[400px]">
+        <h1 className="mb-8 text-center text-3xl font-normal text-[#111827]">
+          Sign up
+        </h1>
+
+        <form onSubmit={handleRegister} className="flex flex-col gap-4">
+          {error && (
+            <div className="rounded-md bg-red-50 px-4 py-3 text-sm text-red-700">
+              {error}
+            </div>
+          )}
+
+          <AuthField
+            label="Full name"
+            value={fullName}
+            onChange={setFullName}
+            placeholder="Enter your full name"
+            icon="user"
+            autoComplete="name"
+            required
+          />
+
+          <AuthField
+            label="Email"
+            type="email"
+            value={email}
+            onChange={setEmail}
+            placeholder="Enter your Email Address"
+            icon="mail"
+            autoComplete="email"
+            required
+          />
+
+          <AuthField
+            label="Password"
+            value={password}
+            onChange={setPassword}
+            placeholder="Create a password"
+            icon="lock"
+            showToggle
+            autoComplete="new-password"
+            required
+          />
+
+          <AuthField
+            label="Confirm Password"
+            value={confirmPassword}
+            onChange={setConfirmPassword}
+            placeholder="Re-enter your Password"
+            icon="lock"
+            showToggle
+            autoComplete="new-password"
+            required
+          />
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="mt-2 flex h-12 w-full items-center justify-center rounded-md bg-[#1692EC] text-sm font-medium text-white transition-colors hover:bg-[#0070A4] disabled:opacity-60"
+          >
+            {loading ? (
+              <span className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+            ) : (
+              "Create an account"
+            )}
+          </button>
+        </form>
+
+        <p className="mt-8 text-center text-sm text-[#6B7280]">
+          Already have an account?{" "}
+          <button
+            type="button"
+            onClick={() => switchView("login")}
+            className="font-medium text-[#1692EC] hover:underline"
+          >
+            Sign in
+          </button>
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full max-w-[400px]">
       <h1 className="mb-10 text-center text-3xl font-normal text-[#111827]">
         Login
       </h1>
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+      <form onSubmit={handleLogin} className="flex flex-col gap-5">
         {error && (
           <div className="rounded-md bg-red-50 px-4 py-3 text-sm text-red-700">
             {error}
@@ -234,15 +407,18 @@ export function LoginForm() {
         </button>
       </form>
 
-      <p className="mt-8 text-center text-sm text-[#6B7280]">
-        Don&apos;t have an account?{" "}
-        <Link
-          href={`/register?role=${role}`}
-          className="font-medium text-[#1692EC] hover:underline"
-        >
-          Create an account
-        </Link>
-      </p>
+      {role === "user" && (
+        <p className="mt-8 text-center text-sm text-[#6B7280]">
+          Don&apos;t have an account?{" "}
+          <button
+            type="button"
+            onClick={() => switchView("register")}
+            className="font-medium text-[#1692EC] hover:underline"
+          >
+            Create an account
+          </button>
+        </p>
+      )}
     </div>
   );
 }
