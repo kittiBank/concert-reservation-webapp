@@ -20,6 +20,7 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { ConcertsService } from './concerts.service';
 import { ConcertResponseDto } from './dto/concert-response.dto';
+import { ConcertStatsDto } from './dto/concert-stats.dto';
 import { CreateConcertDto } from './dto/create-concert.dto';
 import { ListConcertsQueryDto } from './dto/list-concerts-query.dto';
 
@@ -34,6 +35,12 @@ export class ConcertsController {
     @Query() query: ListConcertsQueryDto,
   ): Promise<ApiListResponseDto<ConcertResponseDto>> {
     return this.concertsService.findAll(query);
+  }
+
+  @Get('stats')
+  @Roles(Role.ADMIN)
+  getStats(): Promise<ApiItemResponseDto<ConcertStatsDto>> {
+    return this.concertsService.getStats();
   }
 
   @Get(':id')
