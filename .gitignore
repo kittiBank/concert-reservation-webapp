@@ -1,0 +1,31 @@
+# Dependencies
+node_modules/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+coverage/
+generated/
+
+# Logs & debug
+*.log
+npm-debug.log*
+
+# OS & IDE
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# Cursor
+.cursor/rules/
+
+# Prisma
+backend/generated/
