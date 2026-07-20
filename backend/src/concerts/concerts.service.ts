@@ -54,6 +54,16 @@ export class ConcertsService {
     return response;
   }
 
+  async findOne(id: number): Promise<ApiItemResponseDto<ConcertResponseDto>> {
+    const concert = await this.concertsRepository.findById(id);
+
+    if (!concert) {
+      throw new NotFoundException(`Concert with id ${id} not found`);
+    }
+
+    return buildItemResponse(this.toResponse(concert));
+  }
+
   async create(
     dto: CreateConcertDto,
   ): Promise<ApiItemResponseDto<ConcertResponseDto>> {

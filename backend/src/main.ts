@@ -16,6 +16,11 @@ async function bootstrap() {
     }),
   );
 
+  app.enableCors({
+    origin: process.env.CORS_ORIGIN ?? 'http://localhost:3000',
+    credentials: true,
+  });
+
   const port = process.env.PORT ?? 3001;
   await app.listen(port);
   logger.log(`Backend listening on http://localhost:${port}`);
