@@ -1,8 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client"
   output   = "../generated/prisma"
@@ -10,4 +5,48 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  role         Role     @default(USER)
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  reservations Reservation[]
+
+  @@map("users")
+}
+
+model Concert {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String
+  totalSeats  Int      @map("total_seats")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  reservations Reservation[]
+
+  @@map("concerts")
+}
+
+model Reservation {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  concertId Int      @map("concert_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  concert Concert @relation(fields: [concertId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, concertId])
+  @@index([userId])
+  @@index([concertId])
+  @@map("reservations")
 }
