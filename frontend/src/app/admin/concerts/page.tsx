@@ -9,6 +9,7 @@ import { AdminStatCards } from "@/components/admin/AdminStatCards";
 import { Button } from "@/components/ui/Button";
 import { CheckCircleIcon } from "@/components/ui/CheckCircleIcon";
 import { EmptyState, Spinner } from "@/components/ui/Spinner";
+import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 import { dedupeRequest } from "@/lib/api/dedupe";
 import { ApiError } from "@/lib/api/client";
@@ -31,6 +32,7 @@ async function loadConcertsData() {
 }
 
 export default function AdminConcertsPage() {
+  const { user, isLoading: authLoading } = useAuth();
   const [tab, setTab] = useState<AdminTab>("create");
   const [stats, setStats] = useState<ConcertStats | null>(null);
   const [concerts, setConcerts] = useState<Concert[]>([]);
@@ -57,6 +59,9 @@ export default function AdminConcertsPage() {
   };
 
   useEffect(() => {
+    if (authLoading || !user) return;
+
+    const currentUser = user;
     let cancelled = false;
 
     async function fetchInitialData() {
@@ -64,7 +69,7 @@ export default function AdminConcertsPage() {
 
       try {
         const { statsData, concertsData } = await dedupeRequest(
-          "admin-concerts-home",
+          `admin-concerts-home-${currentUser.id}-${currentUser.role}`,
           loadConcertsData,
         );
 
@@ -90,7 +95,7 @@ export default function AdminConcertsPage() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [authLoading, user]);
 
   const handleDeleteRequest = (id: number, name: string) => {
     setDeleteTarget({ id, name });
@@ -123,7 +128,7 @@ export default function AdminConcertsPage() {
 
   return (
     <div className="flex flex-col p-3 sm:p-4 md:h-full md:min-h-0 md:overflow-hidden md:p-6">
-      {loading && !stats ? (
+      {authLoading || (loading && !stats) ? (
         <Spinner />
       ) : (
         <>

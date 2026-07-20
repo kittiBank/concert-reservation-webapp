@@ -15,6 +15,8 @@ import {
   getToken,
   isAdmin,
   setAuth,
+  switchActiveSession,
+  type PortalRole,
 } from "@/lib/auth/storage";
 import type { LoginInput, RegisterInput, User } from "@/types";
 
@@ -26,6 +28,7 @@ interface AuthContextValue {
   login: (input: LoginInput) => Promise<User>;
   register: (input: RegisterInput) => Promise<void>;
   logout: () => void;
+  switchPortal: (portal: PortalRole) => boolean;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -34,14 +37,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
+  const syncUserFromStorage = useCallback(() => {
     const token = getToken();
     const storedUser = getStoredUser();
-    if (token && storedUser) {
-      setUser(storedUser);
-    }
-    setIsLoading(false);
+    setUser(token && storedUser ? storedUser : null);
   }, []);
+
+  useEffect(() => {
+    syncUserFromStorage();
+    setIsLoading(false);
+  }, [syncUserFromStorage]);
+
+  useEffect(() => {
+    const handleSessionExpired = () => {
+      syncUserFromStorage();
+    };
+
+    window.addEventListener("auth:session-expired", handleSessionExpired);
+    return () => {
+      window.removeEventListener("auth:session-expired", handleSessionExpired);
+    };
+  }, [syncUserFromStorage]);
 
   const login = useCallback(async (input: LoginInput) => {
     const data = await apiLogin(input);
@@ -61,6 +77,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null);
   }, []);
 
+  const switchPortal = useCallback((portal: PortalRole) => {
+    const nextUser = switchActiveSession(portal);
+    if (!nextUser) return false;
+
+    setUser(nextUser);
+    return true;
+  }, []);
+
   const value = useMemo(
     () => ({
       user,
@@ -70,8 +94,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       login,
       register,
       logout,
+      switchPortal,
     }),
-    [user, isLoading, login, register, logout],
+    [user, isLoading, login, register, logout, switchPortal],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

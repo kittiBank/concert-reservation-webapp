@@ -4,18 +4,23 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { AdminHistoryTable } from "@/components/admin/AdminHistoryTable";
 import { EmptyState, Spinner } from "@/components/ui/Spinner";
+import { useAuth } from "@/hooks/useAuth";
 import { dedupeRequest } from "@/lib/api/dedupe";
 import { ApiError } from "@/lib/api/client";
 import { listAllReservations } from "@/lib/api/reservations";
 import type { Reservation } from "@/types";
 
 export default function AdminAuditPage() {
+  const { user, isLoading: authLoading } = useAuth();
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
+    if (authLoading || !user) return;
+
+    const currentUser = user;
     let cancelled = false;
 
     async function fetchAudit() {
@@ -23,7 +28,7 @@ export default function AdminAuditPage() {
 
       try {
         const response = await dedupeRequest(
-          `admin-audit:${page}`,
+          `admin-audit:${page}:${currentUser.id}-${currentUser.role}`,
           () => listAllReservations({ page, pageSize: 20 }),
         );
 
@@ -49,11 +54,11 @@ export default function AdminAuditPage() {
     return () => {
       cancelled = true;
     };
-  }, [page]);
+  }, [authLoading, user, page]);
 
   return (
     <div className="p-3 sm:p-4 md:p-6">
-      {loading ? (
+      {authLoading || loading ? (
         <Spinner />
       ) : reservations.length === 0 ? (
         <EmptyState

@@ -7,7 +7,8 @@ import { PublicIcon } from "@/components/ui/PublicIcon";
 import { cn } from "@/lib/utils";
 
 type NavItem = {
-  href: string;
+  href?: string;
+  switchTo?: "user" | "admin";
   label: string;
   shortLabel?: string;
   icon: string;
@@ -29,7 +30,7 @@ const adminNavItems: NavItem[] = [
     match: (path: string) => path.startsWith("/admin/audit"),
   },
   {
-    href: "/concerts",
+    switchTo: "user",
     label: "Switch to user",
     shortLabel: "User",
     icon: "/icon/refresh-ccw.png",
@@ -48,7 +49,7 @@ const userNavItems: NavItem[] = [
       path.startsWith("/my-reservations"),
   },
   {
-    href: "/login?role=admin",
+    switchTo: "admin",
     label: "Switch to Admin",
     shortLabel: "Admin",
     icon: "/icon/refresh-ccw.png",
@@ -109,7 +110,7 @@ function NavLink({
 export function AdminSidebar() {
   const pathname = usePathname();
   const router = useRouter();
-  const { logout } = useAuth();
+  const { logout, switchPortal } = useAuth();
   const isAdminPortal = pathname.startsWith("/admin");
   const navItems = isAdminPortal ? adminNavItems : userNavItems;
   const portalTitle = isAdminPortal ? "Admin" : "User";
@@ -117,6 +118,15 @@ export function AdminSidebar() {
   const handleLogout = () => {
     logout();
     router.push("/");
+  };
+
+  const handleSwitchPortal = (role: "user" | "admin") => {
+    if (switchPortal(role)) {
+      router.push(role === "user" ? "/concerts" : "/admin/concerts");
+      return;
+    }
+
+    router.push(role === "user" ? "/login?role=user" : "/login?role=admin");
   };
 
   return (
@@ -127,14 +137,17 @@ export function AdminSidebar() {
         </div>
 
         <nav className="flex flex-1 flex-col gap-1 px-3">
-          {navItems.map(({ href, label, shortLabel, icon, match }) => (
+          {navItems.map(({ href, switchTo, label, shortLabel, icon, match }) => (
             <NavLink
-              key={href}
+              key={href ?? switchTo}
               href={href}
               label={label}
               shortLabel={shortLabel}
               icon={icon}
               active={match(pathname)}
+              onClick={
+                switchTo ? () => handleSwitchPortal(switchTo) : undefined
+              }
             />
           ))}
         </nav>
@@ -149,14 +162,15 @@ export function AdminSidebar() {
       </aside>
 
       <nav className="fixed inset-x-0 bottom-0 z-50 flex items-stretch border-t border-[#E5E7EB] bg-white px-2 py-1 md:hidden">
-        {navItems.map(({ href, label, shortLabel, icon, match }) => (
+        {navItems.map(({ href, switchTo, label, shortLabel, icon, match }) => (
           <NavLink
-            key={href}
+            key={href ?? switchTo}
             href={href}
             label={label}
             shortLabel={shortLabel}
             icon={icon}
             active={match(pathname)}
+            onClick={switchTo ? () => handleSwitchPortal(switchTo) : undefined}
             compact
           />
         ))}
