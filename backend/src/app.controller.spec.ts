@@ -15,6 +15,7 @@ describe('AppController', () => {
   });
 
   describe('root', () => {
+    //CASE: health check returns "Hello World!"
     it('should return "Hello World!"', () => {
       expect(appController.getHello()).toBe('Hello World!');
     });
