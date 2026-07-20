@@ -1,6 +1,10 @@
 # Concert Reservation Webapp
 
+
+
 A full-stack concert seat reservation system built with **Next.js**, **NestJS**, and **PostgreSQL**.
+
+<img width="500" height="250" alt="Screenshot 2569-07-20 at 23 46 42" src="https://github.com/user-attachments/assets/52e96f10-74fd-40ed-a21c-ee5c30659683" />
 
 ## Roles
 
@@ -67,7 +71,7 @@ Authorization: Bearer <token>
 
 ---
 
-# Getting Started
+# How to run
 
 ## Requirements
 
@@ -86,7 +90,7 @@ pnpm install --dir frontend
 
 ```bash
 cp backend/.env.example backend/.env
-cp frontend/.env.example frontend/.env.local
+cp frontend/.env.example frontend/.env
 ```
 
 ## 3. Start PostgreSQL
@@ -106,26 +110,26 @@ pnpm prisma:seed
 
 ## 5. Start Backend
 
-```
-http://localhost:3001
-```
-
 ```bash
 cd backend
 
 pnpm start:dev
 ```
 
-## 6. Start Frontend
+```
+http://localhost:3001
+```
 
-```
-http://localhost:3000
-```
+## 6. Start Frontend
 
 ```bash
 cd frontend
 
 pnpm dev
+```
+
+```
+http://localhost:3000
 ```
 
 ---
@@ -145,24 +149,4 @@ pnpm dev
 cd backend
 
 pnpm test
-```
-
-# Screenshots
-
-Place screenshots inside:
-
-```
-docs/screenshots/
-```
-
-| Screen | File |
-|--------|------|
-| Landing | `docs/screenshots/landing.png` |
-| Login | `docs/screenshots/login.png` |
-| User Home | `docs/screenshots/user-home.png` |
-| Admin Dashboard | `docs/screenshots/admin-home.png` |
-| Reservation History | `docs/screenshots/admin-audit.png` |
-
-```md
-![Landing](docs/screenshots/landing.png)
 ```
