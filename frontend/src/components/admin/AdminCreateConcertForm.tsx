@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { createConcert } from "@/lib/api/concerts";
 import { ApiError } from "@/lib/api/client";
 import { PublicIcon } from "@/components/ui/PublicIcon";
+import { CheckCircleIcon } from "@/components/ui/CheckCircleIcon";
 import { cn } from "@/lib/utils";
 
 interface FormErrors {
@@ -85,7 +86,9 @@ export function AdminCreateConcertForm({ onSuccess }: AdminCreateConcertFormProp
         description: description.trim(),
         totalSeats: Number(totalSeats),
       });
-      toast.success("Concert created successfully");
+      toast.success("Create successfully", {
+        icon: <CheckCircleIcon />,
+      });
       setName("");
       setDescription("");
       setTotalSeats("500");

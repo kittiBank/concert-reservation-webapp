@@ -4,8 +4,10 @@ import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { AdminCreateConcertForm } from "@/components/admin/AdminCreateConcertForm";
 import { AdminConcertOverviewList } from "@/components/admin/AdminConcertOverviewList";
+import { AdminDeleteConcertModal } from "@/components/admin/AdminDeleteConcertModal";
 import { AdminStatCards } from "@/components/admin/AdminStatCards";
 import { Button } from "@/components/ui/Button";
+import { CheckCircleIcon } from "@/components/ui/CheckCircleIcon";
 import { EmptyState, Spinner } from "@/components/ui/Spinner";
 import { cn } from "@/lib/utils";
 import { ApiError } from "@/lib/api/client";
@@ -24,6 +26,10 @@ export default function AdminConcertsPage() {
   const [concerts, setConcerts] = useState<Concert[]>([]);
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<{
+    id: number;
+    name: string;
+  } | null>(null);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -47,13 +53,20 @@ export default function AdminConcertsPage() {
     fetchData();
   }, [fetchData]);
 
-  const handleDelete = async (id: number, name: string) => {
-    if (!confirm(`Delete "${name}"? This cannot be undone.`)) return;
+  const handleDeleteRequest = (id: number, name: string) => {
+    setDeleteTarget({ id, name });
+  };
 
-    setDeletingId(id);
+  const handleDeleteConfirm = async () => {
+    if (!deleteTarget) return;
+
+    setDeletingId(deleteTarget.id);
     try {
-      await deleteConcert(id);
-      toast.success("Concert deleted");
+      await deleteConcert(deleteTarget.id);
+      toast.success("Delete successfully", {
+        icon: <CheckCircleIcon />,
+      });
+      setDeleteTarget(null);
       fetchData();
     } catch (err) {
       const message =
@@ -117,10 +130,20 @@ export default function AdminConcertsPage() {
               <AdminConcertOverviewList
                 concerts={concerts}
                 deletingId={deletingId}
-                onDelete={handleDelete}
+                onDelete={handleDeleteRequest}
               />
             )}
           </div>
+
+          <AdminDeleteConcertModal
+            open={deleteTarget !== null}
+            concertName={deleteTarget?.name ?? ""}
+            loading={deletingId !== null}
+            onCancel={() => {
+              if (deletingId === null) setDeleteTarget(null);
+            }}
+            onConfirm={handleDeleteConfirm}
+          />
         </>
       )}
     </div>
