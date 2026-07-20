@@ -1,0 +1,60 @@
+[data-sonner-toaster] {
+  --width: 280px;
+  --toast-close-button-start: unset;
+  --toast-close-button-end: unset;
+  --toast-close-button-transform: none;
+}
+
+[data-sonner-toast][data-styled="true"] {
+  display: flex !important;
+  align-items: center !important;
+  width: 280px !important;
+  gap: 8px;
+}
+
+[data-sonner-toast][data-styled="true"] [data-icon] {
+  order: 1;
+  flex-shrink: 0;
+}
+
+[data-sonner-toast][data-styled="true"] [data-content] {
+  order: 2;
+  flex: 1;
+  min-width: 0;
+}
+
+[data-sonner-toast][data-styled="true"] [data-close-button].toast-close-inline {
+  position: static !important;
+  order: 3 !important;
+  top: auto !important;
+  left: auto !important;
+  right: auto !important;
+  margin-left: auto !important;
+  transform: none !important;
+  align-self: center;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 16px;
+  width: 16px;
+  padding: 0;
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  opacity: 1;
+  cursor: pointer;
+}
+
+[data-sonner-toast][data-styled="true"] [data-close-button].toast-close-inline:hover {
+  background: transparent !important;
+  border-color: transparent !important;
+  opacity: 1;
+}
+
+[data-rich-colors="true"][data-sonner-toast][data-styled="true"]
+  [data-close-button].toast-close-inline {
+  background: transparent !important;
+  border: none !important;
+  color: inherit;
+}

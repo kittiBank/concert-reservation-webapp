@@ -61,18 +61,12 @@ export function AdminConcertOverviewList({
 
             <button
               type="button"
-              disabled={deletingId === concert.id}
+              disabled={deletingId !== null}
               onClick={() => onDelete(concert.id, concert.name)}
               className="inline-flex h-9 w-full items-center justify-center gap-2 rounded-md bg-[#F96464] px-4 text-sm font-medium text-white transition-colors hover:bg-[#e85555] disabled:opacity-60 sm:w-auto"
             >
-              {deletingId === concert.id ? (
-                <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-              ) : (
-                <>
-                  <TrashIcon />
-                  Delete
-                </>
-              )}
+              <TrashIcon />
+              Delete
             </button>
           </div>
         </article>
