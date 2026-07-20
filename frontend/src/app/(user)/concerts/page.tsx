@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { UserConcertOverviewList } from "@/components/concerts/UserConcertOverviewList";
 import { CheckCircleIcon } from "@/components/ui/CheckCircleIcon";
 import { EmptyState, Spinner } from "@/components/ui/Spinner";
+import { useAuth } from "@/hooks/useAuth";
 import { dedupeRequest } from "@/lib/api/dedupe";
 import { ApiError } from "@/lib/api/client";
 import { listConcerts } from "@/lib/api/concerts";
@@ -13,21 +14,22 @@ import {
   createReservation,
   listMyReservations,
 } from "@/lib/api/reservations";
-import type { Concert } from "@/types";
+import type { Concert, Reservation } from "@/types";
 
-async function loadUserHomeData() {
-  const [concertsResponse, reservationsResponse] = await Promise.all([
-    listConcerts({ pageSize: 50 }),
-    listMyReservations({ pageSize: 100 }),
-  ]);
+async function loadUserHomeData(isAdminUser: boolean) {
+  const concertsResponse = await listConcerts({ pageSize: 50 });
 
-  return { concertsResponse, reservationsResponse };
+  let reservations: Reservation[] = [];
+  if (!isAdminUser) {
+    const reservationsResponse = await listMyReservations({ pageSize: 100 });
+    reservations = reservationsResponse.data;
+  }
+
+  return { concertsResponse, reservations };
 }
 
 function buildReservationsMap(
-  reservations: Awaited<
-    ReturnType<typeof listMyReservations>
-  >["data"],
+  reservations: Reservation[],
 ): Record<number, number> {
   return Object.fromEntries(
     reservations.map((reservation) => [reservation.concertId, reservation.id]),
@@ -35,6 +37,7 @@ function buildReservationsMap(
 }
 
 export default function ConcertsPage() {
+  const { user, isAdmin, isLoading: authLoading } = useAuth();
   const [concerts, setConcerts] = useState<Concert[]>([]);
   const [reservationsByConcertId, setReservationsByConcertId] = useState<
     Record<number, number>
@@ -43,31 +46,30 @@ export default function ConcertsPage() {
   const [actionConcertId, setActionConcertId] = useState<number | null>(null);
 
   const refreshData = useCallback(async () => {
-    const { concertsResponse, reservationsResponse } = await loadUserHomeData();
+    const { concertsResponse, reservations } = await loadUserHomeData(isAdmin);
     setConcerts(concertsResponse.data);
-    setReservationsByConcertId(
-      buildReservationsMap(reservationsResponse.data),
-    );
-  }, []);
+    setReservationsByConcertId(buildReservationsMap(reservations));
+  }, [isAdmin]);
 
   useEffect(() => {
+    if (authLoading || !user) return;
+
+    const currentUser = user;
     let cancelled = false;
 
     async function fetchData() {
       setLoading(true);
 
       try {
-        const { concertsResponse, reservationsResponse } = await dedupeRequest(
-          "user-concerts-home",
-          loadUserHomeData,
+        const { concertsResponse, reservations } = await dedupeRequest(
+          `user-concerts-home-${currentUser.id}-${currentUser.role}`,
+          () => loadUserHomeData(isAdmin),
         );
 
         if (cancelled) return;
 
         setConcerts(concertsResponse.data);
-        setReservationsByConcertId(
-          buildReservationsMap(reservationsResponse.data),
-        );
+        setReservationsByConcertId(buildReservationsMap(reservations));
       } catch (err) {
         if (cancelled) return;
 
@@ -86,7 +88,7 @@ export default function ConcertsPage() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [authLoading, user, isAdmin]);
 
   const handleReserve = async (concertId: number) => {
     setActionConcertId(concertId);
@@ -124,7 +126,7 @@ export default function ConcertsPage() {
 
   return (
     <div className="flex flex-col p-3 sm:p-4 md:h-full md:min-h-0 md:overflow-hidden md:p-6">
-      {loading ? (
+      {authLoading || loading ? (
         <Spinner />
       ) : concerts.length === 0 ? (
         <EmptyState

@@ -1,4 +1,4 @@
-import { getToken } from "@/lib/auth/storage";
+import { getToken, getStoredUser, clearSessionForPortal, toPortalRole } from "@/lib/auth/storage";
 import type { ApiErrorResponse } from "@/types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
@@ -60,6 +60,16 @@ export async function apiRequest<T>(
   });
 
   if (!response.ok) {
+    if (response.status === 401 && auth) {
+      const user = getStoredUser();
+      if (user) {
+        clearSessionForPortal(toPortalRole(user.role));
+      }
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("auth:session-expired"));
+      }
+    }
+
     throw await parseError(response);
   }
 

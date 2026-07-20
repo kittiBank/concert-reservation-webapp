@@ -173,7 +173,7 @@ export function LoginForm() {
   const searchParams = useSearchParams();
   const role = searchParams.get("role") === "admin" ? "admin" : "user";
   const viewParam = searchParams.get("view") === "register" ? "register" : "login";
-  const { login, register, logout } = useAuth();
+  const { login, register, logout, switchPortal, isLoading } = useAuth();
   const [view, setView] = useState<AuthView>(viewParam);
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -185,6 +185,14 @@ export function LoginForm() {
   useEffect(() => {
     setView(viewParam);
   }, [viewParam]);
+
+  useEffect(() => {
+    if (isLoading || view !== "login") return;
+
+    if (switchPortal(role)) {
+      router.replace(role === "admin" ? "/admin/concerts" : "/concerts");
+    }
+  }, [isLoading, view, role, switchPortal, router]);
 
   const switchView = (next: AuthView) => {
     setView(next);
